@@ -1,0 +1,24 @@
+#--------------------------SET UP INSTRUCTIONS--------------------------------------
+1) Install Anaconda for pyton 3.8 or above as per your operating system
+    from https://www.anaconda.com/products/individual
+2) Confirm and if required, modify path of Anaconda in INSTALL.bat file as per 
+    Anaconda installation on your computer
+3) Run INSTALL.bat file (double click), 
+    you have to do it one time only on your system
+
+EITHER
+4) Open jupyter notebook from Start->Anaconda3->Jupyter notebook, 
+    it opens as tab in browser
+5) Open OptionRangeTrader.ipynb file in jupyter notebook
+6) Run notebook using Kernel->Restart and run all
+7) If you want to stop/restart the code, use Kernel->Restart and Run all
+
+OR
+4) Confirm and if required, modify path of Anaconda in RUN.bat file as per 
+    Anaconda installation on your computer
+5) Run RUN.bat file (double click), , voila opens as tab in browser
+
+
+    
+    
+#END
