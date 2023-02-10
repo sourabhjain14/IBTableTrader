@@ -204,7 +204,7 @@ def get_ticker(ibprogram=None, symbol=None, instrument_type='stock'):
     
     
 
-def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direction="Buy", size=1, price=0.0, priceOffset=0.0, TP=0.0, SL=0.0, TSL=0.0, TIF='GTC', outsideRTH=False, ibprogram=None, expiry='20200228', strike=300, optionType='C', tradingClass=''):
+def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direction="Buy", size=1, price=0.0, priceOffset=0.0, TP=0.0, SL=0.0, TSL=0.0, TIF='GTC', outsideRTH=False, ibprogram=None, expiry='20200228', strike=300, optionType='C', tradingClass='',adjust=False):
     util.startLoop()  # uncomment this line when in a notebook
     #print("get data connecting IB")
     
@@ -301,7 +301,7 @@ def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direc
     #print(tradeTP) 
     
     '''Stop Loss'''
-    if SL>0:
+    if SL>0 and adjust==False:
         SLPrice = round(SL,1) #round(price*(1-0.01*SL) if direction=="Buy" else price*(1+0.01*SL), 2)
         slOrder=StopOrder(closedirection, size, SLPrice)
         slOrder.parentId = order.orderId
@@ -310,7 +310,30 @@ def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direc
         if TSL>0:
             slOrder.transmit=False
         bracket.append(slOrder)    
+    
+    
+    '''Adjustable Stop Loss'''
+    if SL>0 and adjust==True:
+        # Attached order is a conventional STP order in opposite direction
+        attachedOrderStopPrice=round(SL,1)
+        slOrder = StopOrder(closedirection, size, attachedOrderStopPrice)
+        slOrder.parentId = order.orderId
+        #When trigger price is penetrated
+        triggerPrice=TPPrice
+        slOrder.triggerPrice = triggerPrice
+        #The parent order will be turned into a STP order
+        slOrder.adjustedOrderType = "STP"
+        #With the given STP price
+        adjustStopPrice=price
+        slOrder.adjustedStopPrice = adjustStopPrice
         
+        slOrder.eTradeOnly = False
+        slOrder.firmQuoteOnly = False
+        if TSL>0:
+            slOrder.transmit=False
+        bracket.append(slOrder) 
+    
+    
     '''Trailing Stop Loss'''    
     if TSL>0:
         TSLPrice = round(TSL,1) #round(0.01*price*TSL,2) #round(price*(1-0.01*TSL) if direction=="Buy" else price*(1+0.01*TSL), 2)
@@ -340,6 +363,7 @@ def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direc
         print('Order Placed with ID: ',order_res.order.orderId)
         trade.append(order_res)
     
+    #print(trade)
     #bkt = BracketOrder(order, tpOrder, slOrder)
     #bktTrade=ib.placeOrder(contract, bkt)
     #ib.sleep(2)
@@ -454,6 +478,8 @@ def get_account_detail(ibprogram=None):
     #port=dacc['port'][0]
     #clientId=dacc['clientId'][0]
     #print(IP,port,clientId)
+    #print("In get account detail")
+    
     print(ibprogram)
     
     
@@ -483,8 +509,8 @@ def get_account_detail(ibprogram=None):
     #print(acc)
     accdata=dict()
     accdata['accountID'] = acc[0].account
-    accountT= [v.tag for v in acc if v.currency == 'SGD']
-    accountV= [v.value for v in acc if v.currency == 'SGD']
+    accountT= [v.tag for v in acc if v.currency == 'USD']
+    accountV= [v.value for v in acc if v.currency == 'USD']
     for i in range(len(accountT)): accdata[accountT[i]]=accountV[i]
     
     AvailableFunds = float(accdata['AvailableFunds'])

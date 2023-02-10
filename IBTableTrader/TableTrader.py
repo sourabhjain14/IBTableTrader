@@ -19,7 +19,7 @@ import pytz
 
 #import ipyregulartable as rt
 import ipysheet
-from ipydatagrid import DataGrid
+#from ipydatagrid import DataGrid
 
 #import globalvar
 #from initialize import g_tick_dict, param, g_param, STRATEGY_LIST
@@ -43,19 +43,24 @@ util.startLoop()  # uncomment this line when in a notebook
 global ibprogram
 ibprogram = IB()
 
+dl = [{'account':0}]
+#dfa  = pd.DataFrame(dl) 
 try:
     ibprogram.connect(IP, PORT, clientId=CLIENT_ID)
     #print(ibprogram)
     #acc = ibprogram.accountSummary()
     ibprogram.sleep(2)
     
-    #print("Connection Established!")
+    print("Connection Established!")
     accdata = get_account_detail(ibprogram)
     #print(accdata)
+    #print(type(accdata))
+    #print(accdata['accountID'])
+    #print("problem")
     dl = [{'AccountID':accdata['accountID'], 'AvailableFunds': accdata['AvailableFunds'], 'BuyingPower': accdata['BuyingPower']}]
     dfa  = pd.DataFrame(dl)
 except:
-    print("Connection Failed? Refresh")
+    print("Connection Failed?? Refresh")
     dl = [{'account':0}]
     dfa  = pd.DataFrame(dl)    
 
@@ -270,7 +275,7 @@ def buy_button(b, i=0):
                     direction="Buy", size=size1, price=price, TP=tp1, SL=sl,ibprogram=ibprogram)
         print("BUY2:",symbol,"price:",price,"sl:",sl,"tp:",tp2,"size:",size2)
         place_order(instrument_type='stock',symbol =symbol,orderType='LMT',
-                    direction="Buy", size=size2, price=price, TP=tp2, SL=sl,ibprogram=ibprogram)
+                    direction="Buy", size=size2, price=price, TP=tp2, SL=sl,ibprogram=ibprogram,adjust=True)
     except:
         print("buy failed for ", table_w.loc[i,0].value)
         out_live.append_stdout("buy failed for "+str(table_w.loc[i,0].value)+'\n')
@@ -298,7 +303,7 @@ def sell_button(b, i=0):
                     direction="Sell", size=size1, price=price, TP=tp1, SL=sl,ibprogram=ibprogram)
         print("SELL2:",symbol,"price:",price,"sl:",sl,"tp:",tp2,"size:",size2)
         place_order(instrument_type='stock',symbol =symbol,orderType='LMT',
-                    direction="Sell", size=size2, price=price, TP=tp2, SL=sl,ibprogram=ibprogram)
+                    direction="Sell", size=size2, price=price, TP=tp2, SL=sl,ibprogram=ibprogram,adjust=True)
         #print("SELL:",symbol,"price:",price,"sl:",sl,"tp1:",tp1,"tp2:",tp2)
     except:
         print("sell failed for ", table_w.loc[i,0].value)
@@ -327,9 +332,11 @@ def calculate_ticker(change, i=0):
         ticker[i] = get_ticker(ibprogram, symbol)
         out_live.append_stdout(str(ticker[i]))
         table_w.loc[i,1].value = ticker[i].bid
+        table_w.loc[i,2].value = ticker[i].ask
     except:
         out_live.append_stdout("ticker fetch failed for "+str(symbol)+'\n')
-        table_w.loc.loc[i,10].value = 0
+        table_w.loc.loc[i,1].value = 0
+        table_w.loc.loc[i,2].value = 0
 for r in range(1,MAX_ROW): 
     table_w.loc[r,0].observe(functools.partial(calculate_ticker, i = r))
 
