@@ -364,8 +364,7 @@ def calculate_ticker(change, i=0):
         out_live.append_stdout(str(ticker[i]))
         table_w.loc[i,1].value = ticker[i].bid
         table_w.loc[i,2].value = ticker[i].ask
-        table_w.loc[i,13].value = ticker[i].close
-        
+        table_w.loc[i,13].value = ticker[i].close       
     except:
         out_live.append_stdout("ticker fetch failed for "+str(symbol)+'\n')
         table_w.loc.loc[i,1].value = 0
@@ -374,7 +373,10 @@ for r in range(1,MAX_ROW):
     table_w.loc[r,0].observe(functools.partial(calculate_ticker, i = r))
 
 #print("ticker created")
+   
     
+    
+# button creation fails in first attempt sometimes    
 try:    
     for r in range(1,MAX_ROW):
         table_w.loc[r,11].value.on_click(functools.partial(buy_button, i = r))
@@ -397,7 +399,7 @@ except:
 
 
 '''
-TRADES:[Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=365, clientId=999, permId=20397575, action='SELL', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=198.0, tif='GTC', ocaGroup='20397573', ocaType=3, parentId=363, rule80A='0', trailStopPrice=198.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='STP', triggerPrice=200.0, adjustedStopPrice=199.0, cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=365, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397575, parentId=363, lastFillPrice=0.0, clientId=999, whyHeld='child,trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 1507, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=364, clientId=999, permId=20397574, action='SELL', totalQuantity=150.0, orderType='LMT', lmtPrice=201.0, auxPrice=0.0, tif='GTC', ocaGroup='20397573', ocaType=3, parentId=363, rule80A='0', openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=364, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397574, parentId=363, lastFillPrice=0.0, clientId=999, whyHeld='child', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=363, clientId=999, permId=20397573, action='BUY', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=199.0, tif='GTC', ocaType=3, rule80A='0', trailStopPrice=199.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=363, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397573, parentId=0, lastFillPrice=0.0, clientId=999, whyHeld='trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=361, clientId=999, permId=20397572, action='SELL', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=198.0, tif='GTC', ocaGroup='20397570', ocaType=3, parentId=359, rule80A='0', trailStopPrice=198.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=361, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397572, parentId=359, lastFillPrice=0.0, clientId=999, whyHeld='child,trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=360, clientId=999, permId=20397571, action='SELL', totalQuantity=150.0, orderType='LMT', lmtPrice=200.0, auxPrice=0.0, tif='GTC', ocaGroup='20397570', ocaType=3, parentId=359, rule80A='0', openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=360, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397571, parentId=359, lastFillPrice=0.0, clientId=999, whyHeld='child', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=359, clientId=999, permId=20397570, action='BUY', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=199.0, tif='GTC', ocaType=3, rule80A='0', trailStopPrice=199.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=359, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397570, parentId=0, lastFillPrice=0.0, clientId=999, whyHeld='trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')])]
+TRADES:[Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=365, clientId=999, permId=20397575, action='SELL', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=198.0, tif='GTC', ocaGroup='20397573', ocaType=3, parentId=363, rule80A='0', trailStopPrice=198.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='STP', triggerPrice=200.0, adjustedStopPrice=199.0, cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=365, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397575, parentId=363, lastFillPrice=0.0, clientId=999, whyHeld='child,trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 1507, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=364, clientId=999, permId=20397574, action='SELL', totalQuantity=150.0, orderType='LMT', lmtPrice=201.0, auxPrice=0.0, tif='GTC', ocaGroup='20397573', ocaType=3, parentId=363, rule80A='0', openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=364, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397574, parentId=363, lastFillPrice=0.0, clientId=999, whyHeld='child', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), 0, order=Order(orderId=363, clientId=999, permId=20397573, action='BUY', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=199.0, tif='GTC', ocaType=3, rule80A='0', trailStopPrice=199.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=363, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.permId=20397573, parentId=0, lastFillPrice=0.0, clientId=999, whyHeld='trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=361, clientId=999, permId=20397572, action='SELL', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=198.0, tif='GTC', ocaGroup='20397570', ocaType=3, parentId=359, rule80A='0', trailStopPrice=198.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=361, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397572, parentId=359, lastFillPrice=0.0, clientId=999, whyHeld='child,trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=360, clientId=999, permId=20397571, action='SELL', totalQuantity=150.0, orderType='LMT', lmtPrice=200.0, auxPrice=0.0, tif='GTC', ocaGroup='20397570', ocaType=3, parentId=359, rule80A='0', openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=360, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397571, parentId=359, lastFillPrice=0.0, clientId=999, whyHeld='child', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')]), Trade(contract=Stock(conId=76792991, symbol='TSLA', right='?', exchange='SMART', currency='USD', localSymbol='TSLA', tradingClass='NMS'), order=Order(orderId=359, clientId=999, permId=20397570, action='BUY', totalQuantity=150.0, orderType='STP', lmtPrice=0.0, auxPrice=199.0, tif='GTC', ocaType=3, rule80A='0', trailStopPrice=199.0, openClose='', eTradeOnly=False, firmQuoteOnly=False, volatilityType=0, deltaNeutralOrderType='None', referencePriceType=0, account='DU3502935', clearingIntent='IB', adjustedOrderType='None', cashQty=0.0, dontUseAutoPriceForHedge=True), orderStatus=OrderStatus(orderId=359, status='PreSubmitted', filled=0.0, remaining=150.0, avgFillPrice=0.0, permId=20397570, parentId=0, lastFillPrice=0.0, clientId=999, whyHeld='trigger', mktCapPrice=0.0), fills=[], log=[TradeLogEntry(time=datetime.datetime(2023, 2, 11, 11, 52, 59, 4510, tzinfo=datetime.timezone.utc), status='PreSubmitted', message='')])]
 '''
 
 
@@ -419,17 +421,19 @@ nest_asyncio.apply()
 #openorders = ibprogram.reqAllOpenOrders()
 #print(openorders[0].totalQuantity)
 
-opentrades =  ibprogram.openTrades()
-ibprogram.sleep(2)
+#opentrades =  ibprogram.openTrades()
+#ibprogram.sleep(2)
 
-TRADETABLE_COLUMN = 6
+TRADETABLE_COLUMN = 8
 TRADETABLE_ROW = MAX_ROW*3
 tradesheet = ipysheet.sheet(rows=TRADETABLE_ROW, columns=TRADETABLE_COLUMN)
 tradetable_w = pd.DataFrame(columns=['A','B','C','D','E','F','G','H'])
 
 for i in range(TRADETABLE_ROW):
     for j in range(TRADETABLE_COLUMN):
-        tradetable_w.loc[i,j] = ipysheet.cell(i, j, None)
+        if i==0: tradetable_w.loc[i,j] = ipysheet.cell(i, j, None,background_color='yellow')
+        else: tradetable_w.loc[i,j] = ipysheet.cell(i, j, None)
+        
         
 def fill_tradetable(opentrades):
     k=0
@@ -439,7 +443,26 @@ def fill_tradetable(opentrades):
     tradetable_w.loc[k,3].value = "totalQuantity"
     tradetable_w.loc[k,4].value = "lmtPrice"
     tradetable_w.loc[k,5].value = "auxPrice"
+    tradetable_w.loc[k,6].value = "ID"
+    tradetable_w.loc[k,7].value = "parentID"
+    
+    #opentrades_sorted = []
+    trade_dict = {}
+    trade_id = []
     for trade in opentrades:
+        tid = trade.order.orderId
+        trade_id.append(tid)
+        trade_dict[tid] = trade
+    trade_id.sort()
+        
+    
+    for i in range(1,TRADETABLE_ROW):
+        for j in range(TRADETABLE_COLUMN):
+            tradetable_w.loc[i,j].value = None
+    
+    #for trade in opentrades:
+    for key in trade_id:
+        trade = trade_dict[key]
         k+=1
         #print(trade.contract.symbol, trade.order.totalQuantity,
         #trade.order.action,trade.order.orderType,
@@ -450,6 +473,9 @@ def fill_tradetable(opentrades):
         tradetable_w.loc[k,3].value = trade.order.totalQuantity
         tradetable_w.loc[k,4].value = trade.order.lmtPrice
         tradetable_w.loc[k,5].value = trade.order.auxPrice
+        tradetable_w.loc[k,6].value = trade.order.orderId
+        tradetable_w.loc[k,7].value = 'MAIN' if trade.order.parentId==0 else trade.order.parentId
+        #tradetable_w.loc[k,7].background_color='blue'
 
 
 async def orderTable():
@@ -458,15 +484,15 @@ async def orderTable():
     old_minute=-1
     while(True):
         now = datetime.datetime.now()
-        nowtz = now#.astimezone(tz)
+        nowtz = now.astimezone(tz)
         clocktime = 100*nowtz.hour+nowtz.minute
         new_minute=nowtz.minute
         if new_minute!=old_minute:
             #new_now = nowtz
             #print("EST Time:",nowtz)
-            out_live.append_stdout("Local Time:"+str(nowtz)+'\n')
-            table_w.loc[1,4].value = nowtz.hour 
-            table_w.loc[1,5].value = nowtz.minute 
+            out_live.append_stdout("Time:"+str(nowtz)+'\n')
+            #table_w.loc[1,4].value = nowtz.hour 
+            #table_w.loc[1,5].value = nowtz.minute 
             old_minute = new_minute
             #try:
             #with await ibprogram.connectAsync():
@@ -475,11 +501,12 @@ async def orderTable():
             #openorders =  ibprogram.reqAllOpenOrders()
             #openorders =  ibprogram.openOrders()
             
-            
-            opentrades =  ibprogram.openTrades()
-            ibprogram.sleep(2)
-            fill_tradetable(opentrades)
-            
+            try:
+                opentrades = ibprogram.openTrades()
+                ibprogram.sleep(2)
+                fill_tradetable(opentrades)
+            except:
+                pass
             #k=1
             #for trade in opentrades:
             #    k+=1
@@ -500,10 +527,6 @@ async def orderTable():
             #    print("orders fetch failed")
         else:
             await asyncio.sleep(1)
-            try:
-                table_w.loc[3,5].value = orders[0].totalQuantity
-            except:
-                pass
 #asyncio.get_event_loop().create_task(orderTable())
 #asyncio.get_event_loop.create_task(ibprogram.reqAllOpenOrders())
 
@@ -537,13 +560,17 @@ async def orderTable():
 #global supertab
 #supertab=None
 async def create_supertab():
-    return widgets.VBox([account_w, symbol_validity_check_w, sheet, tradesheet, out_live])
+    supertab_contents = ['Order Placement','Trades']
+    supertab = widgets.Tab()
+    supertab.set_title(0, 'Order Placement')
+    supertab.set_title(1,'Trades')
+    tabletradetab1 = widgets.VBox([account_w, symbol_validity_check_w, sheet, out_live])
+    tabletradetab2  = widgets.VBox([tradesheet])
+    supertab.children = [tabletradetab1 , tabletradetab2]
+    return supertab
             
 
-#supertab_contents = ['System']
-#supertab = widgets.Tab()
-#supertab.children = [tabletradesheet]
-#supertab.set_title(0, 'System')
+
 
 async def main():
     t1 = asyncio.get_event_loop().create_task(orderTable())
