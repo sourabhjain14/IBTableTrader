@@ -1,0 +1,2 @@
+call "C:\Users\win10\Anaconda3\Scripts\activate.bat"
+jupyter nbconvert --execute --clear-output IBTableTrader.ipynb --NotebookApp.kernel_manager_class=notebook.services.kernels.kernelmanager.AsyncMappingKernelManager
