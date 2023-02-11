@@ -204,7 +204,7 @@ def get_ticker(ibprogram=None, symbol=None, instrument_type='stock'):
     
     
 
-def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direction="Buy", size=1, price=0.0, priceOffset=0.0, TP=0.0, SL=0.0, TSL=0.0, TIF='GTC', outsideRTH=False, ibprogram=None, expiry='20200228', strike=300, optionType='C', tradingClass='',adjust=False):
+def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direction="Buy", size=1, price=0.0, priceOffset=0.0, TP=0.0, SL=0.0, TSL=0.0, TIF='GTC', outsideRTH=False, ibprogram=None, expiry='20200228', strike=300, optionType='C', tradingClass='',adjust=False,adjustTriggerPrice=0.0, adjustPrice=0.0):
     util.startLoop()  # uncomment this line when in a notebook
     #print("get data connecting IB")
     
@@ -261,7 +261,14 @@ def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direc
         order=MarketOrder(direction, size)
     elif orderType=='LMT':
         if price>0.0:
-            order=LimitOrder(direction, size, price)
+            #order=LimitOrder(direction, size, price)
+            #order=StopLimitOrder(direction, size, price, price)
+            #order=StopOrder(direction, size, price)
+            order = Order()
+            order.action = direction
+            order.orderType = "STP"
+            order.auxPrice = price
+            order.totalQuantity = size
         else:
             price = round(ltp*(1-0.01*priceOffset) if direction=="Buy" else ltp*(1+0.01*priceOffset), 2)
             order=LimitOrder(direction, size, price)
@@ -319,7 +326,7 @@ def place_order(instrument_type='stock', symbol = 'AAPL', orderType='MKT', direc
         slOrder = StopOrder(closedirection, size, attachedOrderStopPrice)
         slOrder.parentId = order.orderId
         #When trigger price is penetrated
-        triggerPrice=TPPrice
+        triggerPrice= round(0.5*(price + TPPrice),2)
         slOrder.triggerPrice = triggerPrice
         #The parent order will be turned into a STP order
         slOrder.adjustedOrderType = "STP"
@@ -392,7 +399,7 @@ def place_option_order(symbol = 'NFLX', expiry='20200228', strike=300, optionTyp
     return trade
 
 
-def get_open_orders():
+def get_open_orders(ibprogram):
     util.startLoop()  # uncomment this line when in a notebook
     #dacc = pd.read_csv("access.csv")
     #print(dacc)
@@ -400,13 +407,19 @@ def get_open_orders():
     #port=dacc['port'][0]
     #clientId=dacc['clientId'][0]
     #print(IP,port,clientId)
-    ib = IB()
-    try:
-        ib.connect(IP, PORT, clientId=CLIENT_ID)
-        #ib.connect(IP, port, clientId=clientId)
-    except:
-        print("Connect call failed")
-        return
+    already_connected = False
+    if ibprogram!=None:
+        already_connected = True
+    
+    if already_connected == False:
+        ib = IB()
+        try:
+            ib.connect(IP, PORT, clientId=CLIENT_ID)
+        except:
+            print("Connect call failed")
+            return
+    else:
+        ib = ibprogram
     
     #print(df)
     
@@ -416,7 +429,8 @@ def get_open_orders():
     
     #reqtrades = ib.openTrades()
     ib.sleep(2)
-    ib.disconnect()
+    if already_connected == False:
+        ib.disconnect()
     
     
     #print("Trades: ")
@@ -427,7 +441,7 @@ def get_open_orders():
 
 
 
-def get_open_trades(ibprogram=None):
+def get_open_trades(ibprogram):
     util.startLoop()  # uncomment this line when in a notebook
     #dacc = pd.read_csv("access.csv")
     #print(dacc)
@@ -456,6 +470,7 @@ def get_open_trades(ibprogram=None):
     
     reqtrades = ib.openTrades()
     ib.sleep(2)
+    
     
     if already_connected == False:
         ib.disconnect()

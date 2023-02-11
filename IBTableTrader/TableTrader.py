@@ -30,14 +30,14 @@ from ib_insync import *
 from ACCOUNT_DETAIL import IP, PORT, CLIENT_ID, MAX_ROW
 from IBtrader import get_account_detail, get_ticker
 from IBtrader import place_order
-from IBtrader import get_open_orders, get_open_trades
+from IBtrader import get_open_orders, get_open_trades, get_positions
 #from IBtrader import cancel_all_orders, liquidate_all, cancel_order, liquidate_all
 
-from widgetlib import create_button,create_dropdown
+from widgetlib import create_button,create_dropdown, create_checkbox
 
 
 
-
+param={}
 
 util.startLoop()  # uncomment this line when in a notebook
 global ibprogram
@@ -66,9 +66,28 @@ except:
 
 
     
-param = {}
-symbol_df = pd.read_csv('./nasdaq.csv')
-symbol_list = symbol_df['Symbol'].to_list()
+
+#symbol_df = pd.read_csv('./nasdaq.csv')
+#symbol_list = symbol_df['Symbol'].to_list()
+
+
+symbol_nasdaq = pd.read_csv('./finvizNASDAQ.csv')
+symbol_nasdaq=symbol_nasdaq.dropna()
+symbol_nasdaq_list = (symbol_nasdaq['Ticker']).to_list()
+
+symbol_nyse = pd.read_csv('./finvizNYSE.csv')
+symbol_nyse=symbol_nyse.dropna()
+symbol_nyse_list = symbol_nyse['Ticker'].to_list()
+
+symbol_list_ = symbol_nasdaq_list + symbol_nyse_list
+
+symbol_list = list(set(symbol_list_))
+
+
+
+symbol_validity_check_w = create_checkbox(param, "check_symbol_validity", False, tag='check symbol validity')
+
+
 #print(symbol_list)
     
 out_live = widgets.Output()
@@ -323,10 +342,11 @@ def calculate_ticker(change, i=0):
     #symbol = change.new.value
     #out_live.append_stdout("symbol:"+symbol)
     #print(change['new']['value'])
-    if symbol not in symbol_list:
-        out_live.append_stdout("  not a valid symbol \n")
-        #out_live.append_stdout(str(symbol_list))
-        return
+    if symbol_validity_check_w.value==True:
+        if symbol not in symbol_list:
+            out_live.append_stdout("  not a valid symbol \n")
+            #out_live.append_stdout(str(symbol_list))
+            return
     #print(change)
     try:
         ticker[i] = get_ticker(ibprogram, symbol)
@@ -355,9 +375,31 @@ except:
 
 
 
+'''
+async def orderTable():
+    tz = pytz.timezone('US/Eastern')
+    old_minute=-1
+    while(True):
+        now = datetime.datetime.now()
+        nowtz = now.astimezone(tz)
+        clocktime = 100*nowtz.hour+nowtz.minute
+        new_minute=nowtz.minute
+        if new_minute!=old_minute:
+            #new_now = nowtz
+            print("Time:",nowtz)
+            old_minute = new_minute
+            #orders = get_open_orders(ibprogram)
+            #print(orders)
+        else:
+            await asyncio.sleep(60)
+asyncio.run(orderTable())    
+'''
+
+
 #out_live_table.clear_output()
 #with out_live_table:
 #    display(sheet)
+
 account_w = widgets.Textarea(
     value='',
     #placeholder='',
@@ -367,10 +409,14 @@ account_w = widgets.Textarea(
 account_w.value = dfa.to_string()
 
 #tabletradesheet
-supertab = widgets.VBox([account_w, sheet, out_live])
+supertab = widgets.VBox([account_w, symbol_validity_check_w, sheet, out_live])
 
 #supertab_contents = ['System']
 #supertab = widgets.Tab()
 #supertab.children = [tabletradesheet]
 #supertab.set_title(0, 'System')
+
+
+
+
 
