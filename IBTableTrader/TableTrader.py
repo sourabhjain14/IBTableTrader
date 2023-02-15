@@ -30,13 +30,17 @@ import ipysheet
 
 
 from ib_insync import *
-from ACCOUNT_DETAIL import IP, PORT, CLIENT_ID, MAX_ROW
+from ACCOUNT_DETAIL import IP, PORT, CLIENT_ID, MAX_ROW, DEBUG_MODE
 from IBtrader import get_account_detail, get_ticker
 from IBtrader import place_order
 from IBtrader import get_open_orders, get_open_trades, get_positions
-#from IBtrader import cancel_all_orders, liquidate_all, cancel_order, liquidate_all
 
-from widgetlib import create_button,create_dropdown, create_checkbox
+#get_stock_history(ib=None, symbol='TSLA', btf = '5 min'):
+from IBtrader import get_stock_history
+from IBtrader import liquidate_all, cancel_order
+
+
+from widgetlib import create_button, create_dropdown, create_checkbox, create_floattext
 
 
 
@@ -89,7 +93,8 @@ symbol_list = list(set(symbol_list_))
 
 
 
-symbol_validity_check_w = create_checkbox(param, "check_symbol_validity", False, tag='check symbol validity')
+symbol_validity_check_w = create_checkbox(param, "check_symbol_validity", True, tag='check symbol validity')
+
 
 
 #print(symbol_list)
@@ -100,7 +105,7 @@ out_live = widgets.Output()
 
 MAX_COLUMN = 14
 sheet = ipysheet.sheet(rows=MAX_ROW, columns=MAX_COLUMN)
-table_w = pd.DataFrame(columns=['A','B','C','D','E','F','G','H','I','J','K','L','M','N'])
+table_w = pd.DataFrame(columns=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'])
 #table_w.loc = [[None for i in range(MAX_COLUMN)] for j in range(MAX_ROW)]
 
 #table_w_ = pd.DataFrame(columns=['Symbol','Bid','Ask','MaxLoss','EntryPrice','StopPrice','Shares',
@@ -114,73 +119,89 @@ StopPrice_column = 0
 Shares_column = 0
 Target1_column = 0
 Target2_column = 0
+StopPct_column = 0
+Value_column = 0
 BUY_column = 0
 SELL_column = 0
+Comment_column = 0
+Widget_column = 0
 
 for i in range(MAX_ROW):
     if i==0:
         j=0
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'Symbol',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'Symbol',background_color='yellow',read_only=True)
         
         j+=1
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'BID',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'BID',background_color='yellow',read_only=True)
         
         j+=1
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'ASK',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'ASK',background_color='yellow',read_only=True)
+        
+        j+=1
+        Comment_column = j
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'Day High',background_color='yellow',read_only=True)
         
         j+=1
         MaxLoss_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'MaxLoss',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'MaxLoss',background_color='yellow',read_only=True)
         
         j+=1
         EntryPrice_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'EntryPrice',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'EntryPrice',background_color='yellow',read_only=True)
         
         j+=1
         StopPrice_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'StopPrice',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'StopPrice',background_color='yellow',read_only=True)
         
         j+=1
         Shares_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'Shares',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'Shares',background_color='yellow',read_only=True)
         
         j+=1
         Target1_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, '1stTarget',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, '1stTarget',background_color='yellow',read_only=True)
         
         j+=1
         Target2_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, '2ndTarget',background_color='yellow')
+        table_w.loc[i,j] = ipysheet.cell(i, j, '2ndTarget',background_color='yellow',read_only=True)
         
         j+=1
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'StopPct',background_color='yellow')
+        StopPct_column=j
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'StopPct',background_color='yellow',read_only=True)
+        
         j+=1
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'Value',background_color='yellow')
+        Value_column=j
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'Value',background_color='yellow',read_only=True)
         
         j+=1
         BUY_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'BUY',background_color='green')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'BUY',background_color='green',read_only=True)
         
         j+=1
         SELL_column = j
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'SELL',background_color='red')
+        table_w.loc[i,j] = ipysheet.cell(i, j, 'SELL',background_color='red',read_only=True)
         
-        j+=1
-        table_w.loc[i,j] = ipysheet.cell(i, j, 'Comment',background_color='yellow')
+        #j+=1
+        #Widget_column = j
+        #table_w.loc[i,j] = ipysheet.cell(i, j, 'Widget',background_color='yellow',read_only=True)
     else:
         for jj in range(MAX_COLUMN):
             if jj==0:
                 table_w.loc[i,jj] = ipysheet.cell(i, jj, None,'text',background_color='white')
-            elif jj==3:
-                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',background_color='red')
-            elif jj==4:
-                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',background_color='green')
-            elif jj==5:
-                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',background_color='orange')    
-            elif jj==6:
+            elif jj==1:
                 table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',read_only=True)
+            elif jj==2:
+                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',read_only=True)
+            elif jj==MaxLoss_column:
+                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',background_color='red',numeric_format='0.00')
+            elif jj==EntryPrice_column:
+                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',background_color='green',numeric_format='0.00')
+            elif jj==StopPrice_column:
+                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',background_color='orange',numeric_format='0.00')    
+            elif jj==Shares_column:
+                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0,'numeric',read_only=True,numeric_format='0')
             else:    
-                table_w.loc[i,jj] = ipysheet.cell(i, jj, 0, 'numeric')
+                table_w.loc[i,jj] = ipysheet.cell(i, jj)
 
 
                 
@@ -188,7 +209,11 @@ for i in range(MAX_ROW):
 
 
 
-
+EntryPriceBox = [None]*MAX_ROW
+for i in range(1,MAX_ROW):
+    EntryPriceBox[i] = create_floattext(param, "EntryPrice", 0.00, tag='')
+    #ipysheet.cell(i, EntryPrice_column, EntryPriceBox[i]
+    #table_w.loc[i,Widget_column] = ipysheet.cell(i,Widget_column, EntryPriceBox[i])
 
 
 buyt = [None]*MAX_ROW
@@ -196,15 +221,19 @@ sellt = [None]*MAX_ROW
 for i in range(1,MAX_ROW):
     buyt[i] = create_button(param, "BUY", 0, 'BUY','green')
     sellt[i] = create_button(param, "SELL", 0, 'SELL', 'red')
-    table_w.loc[i,11] = ipysheet.cell(i, 11, buyt[i])
-    table_w.loc[i,12] = ipysheet.cell(i, 12, sellt[i])
-
+    table_w.loc[i,BUY_column] = ipysheet.cell(i, BUY_column, buyt[i])
+    table_w.loc[i,SELL_column] = ipysheet.cell(i, SELL_column, sellt[i])
 #print("button created")     
     
-for i in range(1,MAX_ROW):
-    ipysheet.cell(i, 3, 300) # MAX LOSS
+
+    
+    
+#for i in range(1,MAX_ROW):
+#    table_w.loc[i,3].value = 300.0
+    #ipysheet.cell(i, 3, 300) # MAX LOSS
     #ipysheet.cell(i, 3, 300) # MAX LOSS
 
+    
 #table_w.loc.loc[1,9]  = 100
 #ipysheet.cell(1, 9, b1)
 #drp1 = create_dropdown(param, 'symbol_list', symbol_list, 'AAPL', tag='')
@@ -216,39 +245,55 @@ for i in range(1,MAX_ROW):
 #with out_live_position:
 #    display(sheet)       
 
-#ipysheet.cell(1, 6) = sheet.cell(1, 4) - sheet.cell(1, 5)
+
+
+
 def calculate_share(change, i=0):
     try:
-        table_w.loc[i,6].value = abs(int(table_w.loc[i,3].value/(table_w.loc[i,EntryPrice_column].value - table_w.loc[i,5].value)))
+        table_w.loc[i,Shares_column].value = abs(int(table_w.loc[i,MaxLoss_column].value/(table_w.loc[i,EntryPrice_column].value - table_w.loc[i,StopPrice_column].value)))
+        #out_live.append_stdout("share calculation success:"+str(change)+'\n')#+str(table_w.loc[i,6].value)+'\n')
     except:
-        table_w.loc[i,6].value = 0
-#table_w.loc.loc[1,4].observe(calculate, 'value')
-#table_w.loc.loc[1,5].observe(calculate, 'value')
-for r in range(1,MAX_ROW): 
-    table_w.loc[r,4].observe(functools.partial(calculate_share, i = r))
-    table_w.loc[r,5].observe(functools.partial(calculate_share, i = r))
+        table_w.loc[i,Shares_column].value = 0
+        #out_live.append_stdout("share calculation failed?:"+str(change)+'\n')
+for r in range(1,MAX_ROW):
+    table_w.loc[r,MaxLoss_column].observe(functools.partial(calculate_share, i = r))
+    table_w.loc[r,EntryPrice_column].observe(functools.partial(calculate_share, i = r))
+    table_w.loc[r,StopPrice_column].observe(functools.partial(calculate_share, i = r))
 
+        
+    
+'''    
+for r in range(1,MAX_ROW):    
+    @ipysheet.calculation(inputs=[table_w.loc[r,3], table_w.loc[r,4], table_w.loc[r,5]], output=table_w.loc[r,6])
+    def calculate_share2(a, b, c):
+        x = 0
+        try:
+            x = int(a/(b-c))
+        except:
+            x = 0
+        return x    
+'''    
     
     
 def calculate_target1(change, i=0):
     try:
-        table_w.loc[i,Target1_column].value = table_w.loc[i,EntryPrice_column].value + (table_w.loc[i,EntryPrice_column].value - table_w.loc[i,5].value)
+        table_w.loc[i,Target1_column].value = table_w.loc[i,EntryPrice_column].value + (table_w.loc[i,EntryPrice_column].value - table_w.loc[i,StopPrice_column].value)
     except:
         table_w.loc[i,Target1_column].value = 0.0
 for r in range(1,MAX_ROW): 
-    table_w.loc[r,4].observe(functools.partial(calculate_target1, i = r))
-    table_w.loc[r,5].observe(functools.partial(calculate_target1, i = r))
+    table_w.loc[r,EntryPrice_column].observe(functools.partial(calculate_target1, i = r))
+    table_w.loc[r,StopPrice_column].observe(functools.partial(calculate_target1, i = r))
 
     
     
 def calculate_target2(change, i=0):
     try:
-        table_w.loc[i,Target2_column].value = table_w.loc[i,EntryPrice_column].value + 2*(table_w.loc[i,EntryPrice_column].value - table_w.loc[i,5].value)
+        table_w.loc[i,Target2_column].value = table_w.loc[i,EntryPrice_column].value + 2*(table_w.loc[i,EntryPrice_column].value - table_w.loc[i,StopPrice_column].value)
     except:
         table_w.loc[i,Target2_column].value = 0.0
 for r in range(1,MAX_ROW): 
-    table_w.loc[r,4].observe(functools.partial(calculate_target2, i = r))
-    table_w.loc[r,5].observe(functools.partial(calculate_target2, i = r))
+    table_w.loc[r,EntryPrice_column].observe(functools.partial(calculate_target2, i = r))
+    table_w.loc[r,StopPrice_column].observe(functools.partial(calculate_target2, i = r))
 
 
     
@@ -256,12 +301,13 @@ for r in range(1,MAX_ROW):
 #ipysheet.cell(1, 6) = sheet.cell(1, 4) - sheet.cell(1, 5)
 def calculate_stoppct(change, i=0):
     try:
-        table_w.loc[i,9].value = 100*(table_w.loc[i,EntryPrice_column].value - table_w.loc[i,5].value)/table_w.loc[i,EntryPrice_column].value
+        table_w.loc[i,StopPct_column].value = 100*(table_w.loc[i,EntryPrice_column].value - table_w.loc[i,StopPrice_column].value)/table_w.loc[i,EntryPrice_column].value
     except:
-        table_w.loc[i,9].value = 0
+        table_w.loc[i,StopPrice_column].value = 0
 for r in range(1,MAX_ROW): 
-    table_w.loc[r,4].observe(functools.partial(calculate_stoppct, i = r))
-    table_w.loc[r,5].observe(functools.partial(calculate_stoppct, i = r))
+    table_w.loc[r,MaxLoss_column].observe(functools.partial(calculate_stoppct, i = r))
+    table_w.loc[r,EntryPrice_column].observe(functools.partial(calculate_stoppct, i = r))
+    table_w.loc[r,StopPrice_column].observe(functools.partial(calculate_stoppct, i = r))
 
 
     
@@ -269,14 +315,20 @@ for r in range(1,MAX_ROW):
 #ipysheet.cell(1, 6) = sheet.cell(1, 4) - sheet.cell(1, 5)
 def calculate_value(change, i=0):
     try:
-        table_w.loc[i,10].value = (table_w.loc[i,EntryPrice_column].value * table_w.loc[i,6].value)
+        table_w.loc[i,Value_column].value = (table_w.loc[i,EntryPrice_column].value * table_w.loc[i,Shares_column].value)
     except:
-        table_w.loc[i,10].value = 0
+        table_w.loc[i,Value_column].value = 0
 for r in range(1,MAX_ROW): 
-    table_w.loc[r,4].observe(functools.partial(calculate_value, i = r))
-    table_w.loc[r,5].observe(functools.partial(calculate_value, i = r))
+    table_w.loc[r,MaxLoss_column].observe(functools.partial(calculate_stoppct, i = r))
+    table_w.loc[r,EntryPrice_column].observe(functools.partial(calculate_stoppct, i = r))
+    table_w.loc[r,StopPrice_column].observe(functools.partial(calculate_stoppct, i = r))
+
 
     
+    
+    
+for i in range(1,MAX_ROW):
+    table_w.loc[i,MaxLoss_column].value = 300.0        
     
 
 def buy_button(b, i=0):
@@ -291,17 +343,19 @@ def buy_button(b, i=0):
         size1 = int(size/2)
         size2 = int(size - size1)
         
-        tp1 = table_w.loc[i,7].value
-        tp2 = table_w.loc[i,8].value
+        tp1 = table_w.loc[i,Target1_column].value
+        tp2 = table_w.loc[i,Target2_column].value
+        
         print("BUY1:",symbol,"price:",price,"sl:",sl,"tp:",tp1,"size:",size1)
         place_order(instrument_type='stock',symbol =symbol,orderType='LMT',
                     direction="Buy", size=size1, price=price, TP=tp1, SL=sl,ibprogram=ibprogram)
+        
         print("BUY2:",symbol,"price:",price,"sl:",sl,"tp:",tp2,"size:",size2)
         place_order(instrument_type='stock',symbol =symbol,orderType='LMT',
                     direction="Buy", size=size2, price=price, TP=tp2, SL=sl,ibprogram=ibprogram,adjust=True)
     except:
-        print("buy failed for ", table_w.loc[i,0].value)
-        out_live.append_stdout("buy failed for "+str(table_w.loc[i,0].value)+'\n')
+        print("buy failed")
+        #out_live.append_stdout("buy failed for "+str(table_w.loc[i,0].value)+'\n')
     b.style.button_color = 'green'
     b.disabled=False
 
@@ -319,11 +373,13 @@ def sell_button(b, i=0):
         size1 = int(size/2)
         size2 = int(size - size1)
 
-        tp1 = table_w.loc[i,7].value
-        tp2 = table_w.loc[i,8].value
+        tp1 = table_w.loc[i,Target1_column].value
+        tp2 = table_w.loc[i,Target2_column].value
+        
         print("SELL1:",symbol,"price:",price,"sl:",sl,"tp:",tp1,"size:",size1)
         place_order(instrument_type='stock',symbol =symbol,orderType='LMT',
                     direction="Sell", size=size1, price=price, TP=tp1, SL=sl,ibprogram=ibprogram)
+        
         print("SELL2:",symbol,"price:",price,"sl:",sl,"tp:",tp2,"size:",size2)
         place_order(instrument_type='stock',symbol =symbol,orderType='LMT',
                     direction="Sell", size=size2, price=price, TP=tp2, SL=sl,ibprogram=ibprogram,adjust=True)
@@ -336,6 +392,7 @@ def sell_button(b, i=0):
 
 #print("observe method created")
 
+#get_stock_history(ibprogram)
 
 
 def onTicker(ticker,i):
@@ -346,7 +403,13 @@ def onTicker(ticker,i):
 ticker=[None]*30
 def calculate_ticker(change, i=0):
     #try:
-    symbol = change['new']['value']
+    symbol_ = change['new']['value']
+    #print(symbol_)
+    #out_live.append_stdout(symbol_+" _ \n")
+    
+    symbol = symbol_.upper()
+    # return
+        
     out_live.append_stdout("symbol:"+symbol)
     #symbol = change.new.value
     #out_live.append_stdout("symbol:"+symbol)
@@ -359,16 +422,28 @@ def calculate_ticker(change, i=0):
     #print(change)
     try:
         ticker[i] = get_ticker(ibprogram, symbol)
+        #print(ticker[i])
+        
         #ticker[i].updateEvent += onTicker
-        #ticker[i].updateEvent += functools.partial(onTicker, i)
+        ticker[i].updateEvent += functools.partial(onTicker, i)
+        
         out_live.append_stdout(str(ticker[i]))
+        
         table_w.loc[i,1].value = ticker[i].bid
         table_w.loc[i,2].value = ticker[i].ask
-        table_w.loc[i,13].value = ticker[i].close       
+        
+        table_w.loc[i,Comment_column].value = ticker[i].high
+        
+        
+        #bars = get_stock_history(ibprogram, symbol,'5 mins')
+        #out_live.append_stdout(str(bars))
+        table_w.loc[i,EntryPrice_column].value = ticker[i].high + 0.02
     except:
-        out_live.append_stdout("ticker fetch failed for "+str(symbol)+'\n')
-        table_w.loc.loc[i,1].value = 0
-        table_w.loc.loc[i,2].value = 0
+        out_live.append_stdout("  ticker fetch failed for "+str(symbol)+'\n')
+        table_w.loc[i,1].value = 0
+        table_w.loc[i,2].value = 0
+    if symbol!=symbol_:
+        table_w.loc[i,0].value = symbol
 for r in range(1,MAX_ROW): 
     table_w.loc[r,0].observe(functools.partial(calculate_ticker, i = r))
 
@@ -379,15 +454,14 @@ for r in range(1,MAX_ROW):
 # button creation fails in first attempt sometimes    
 try:    
     for r in range(1,MAX_ROW):
-        table_w.loc[r,11].value.on_click(functools.partial(buy_button, i = r))
-        table_w.loc[r,12].value.on_click(functools.partial(sell_button, i = r))
+        table_w.loc[r,BUY_column].value.on_click(functools.partial(buy_button, i = r))
+        table_w.loc[r,SELL_column].value.on_click(functools.partial(sell_button, i = r))
 except:
     for r in range(1,MAX_ROW):
-        table_w.loc[r,11].value.on_click(functools.partial(buy_button, i = r))
-        table_w.loc[r,12].value.on_click(functools.partial(sell_button, i = r))
+        table_w.loc[r,BUY_column].value.on_click(functools.partial(buy_button, i = r))
+        table_w.loc[r,SELL_column].value.on_click(functools.partial(sell_button, i = r))
 
 #print("button click created")
-
 
 
 
@@ -424,19 +498,56 @@ nest_asyncio.apply()
 #opentrades =  ibprogram.openTrades()
 #ibprogram.sleep(2)
 
-TRADETABLE_COLUMN = 8
+TRADETABLE_COLUMN = 10
 TRADETABLE_ROW = MAX_ROW*3
 tradesheet = ipysheet.sheet(rows=TRADETABLE_ROW, columns=TRADETABLE_COLUMN)
-tradetable_w = pd.DataFrame(columns=['A','B','C','D','E','F','G','H'])
+tradetable_w = pd.DataFrame(columns=['A','B','C','D','E','F','G','H','I','J'])
 
 for i in range(TRADETABLE_ROW):
     for j in range(TRADETABLE_COLUMN):
-        if i==0: tradetable_w.loc[i,j] = ipysheet.cell(i, j, None,background_color='yellow')
-        else: tradetable_w.loc[i,j] = ipysheet.cell(i, j, None)
+        if i==0: tradetable_w.loc[i,j] = ipysheet.cell(i, j, None,background_color='yellow',read_only=True)
+        else: tradetable_w.loc[i,j] = ipysheet.cell(i, j, None,read_only=True)
+        
+
+
+k=0
+tradetable_w.loc[k,0].value = "symbol"
+tradetable_w.loc[k,1].value = "action"
+tradetable_w.loc[k,2].value = "orderType"
+tradetable_w.loc[k,3].value = "totalQuantity"
+tradetable_w.loc[k,4].value = "lmtPrice"
+tradetable_w.loc[k,5].value = "auxPrice"
+tradetable_w.loc[k,6].value = "ID"
+tradetable_w.loc[k,7].value = "parentID"
+tradetable_w.loc[k,8].value = "Cancel"
+    
+#cancel_order(orderIDStr=None, ibprogram=None): 
+cancelt = [None]*TRADETABLE_ROW
+flattent = [None]*TRADETABLE_ROW
+for i in range(1,TRADETABLE_ROW):
+    cancelt[i] = create_button(param, "Cancel", 0, 'Cancel','red')
+    #sellt[i] = create_button(param, "SELL", 0, 'SELL', 'red')
+    tradetable_w.loc[i,8] = ipysheet.cell(i, 8, cancelt[i])
+    #table_w.loc[i,SELL_column] = ipysheet.cell(i, SELL_column, sellt[i])
+#print("button created")         
+
+def cancel_button(b,i):
+    b.disabled=True
+    b.style.button_color = 'black'
+    orderIDStr = tradetable_w.loc[i,6].value
+    cancel_order(orderIDStr, ibprogram)
+    #b.style.button_color = 'red'
+    #b.disabled=False
+for r in range(1,TRADETABLE_ROW):
+    tradetable_w.loc[r,8].value.on_click(functools.partial(cancel_button, i = r))
+    #table_w.loc[r,SELL_column].value.on_click(functools.partial(sell_button, i = r))
+
+
         
         
 def fill_tradetable(opentrades):
     k=0
+    '''
     tradetable_w.loc[k,0].value = "symbol"
     tradetable_w.loc[k,1].value = "action"
     tradetable_w.loc[k,2].value = "orderType"
@@ -445,7 +556,8 @@ def fill_tradetable(opentrades):
     tradetable_w.loc[k,5].value = "auxPrice"
     tradetable_w.loc[k,6].value = "ID"
     tradetable_w.loc[k,7].value = "parentID"
-    
+    tradetable_w.loc[k,8].value = "Cancel"
+    '''
     #opentrades_sorted = []
     trade_dict = {}
     trade_id = []
@@ -457,8 +569,13 @@ def fill_tradetable(opentrades):
         
     
     for i in range(1,TRADETABLE_ROW):
-        for j in range(TRADETABLE_COLUMN):
+        for j in range(8):
             tradetable_w.loc[i,j].value = None
+    
+    for r in range(1,TRADETABLE_ROW):
+        tradetable_w.loc[r,8].value.style.button_color = 'red'
+        tradetable_w.loc[r,8].value.disabled=False
+        
     
     #for trade in opentrades:
     for key in trade_id:
@@ -478,6 +595,16 @@ def fill_tradetable(opentrades):
         #tradetable_w.loc[k,7].background_color='blue'
 
 
+        
+if DEBUG_MODE==1:
+    try:
+        opentrades = ibprogram.openTrades()
+        ibprogram.sleep(2)
+        fill_tradetable(opentrades)
+    except:
+        pass
+
+        
 async def orderTable():
     orders=None
     tz = pytz.timezone('US/Eastern')
@@ -490,7 +617,8 @@ async def orderTable():
         if new_minute!=old_minute:
             #new_now = nowtz
             #print("EST Time:",nowtz)
-            out_live.append_stdout("Time:"+str(nowtz)+'\n')
+            #out_live.clear_output(True)
+            #out_live.append_stdout("Time:"+str(nowtz)+'\n')
             #table_w.loc[1,4].value = nowtz.hour 
             #table_w.loc[1,5].value = nowtz.minute 
             old_minute = new_minute
@@ -559,7 +687,8 @@ async def orderTable():
 
 #global supertab
 #supertab=None
-async def create_supertab():
+
+if DEBUG_MODE==1:
     supertab_contents = ['Order Placement','Trades']
     supertab = widgets.Tab()
     supertab.set_title(0, 'Order Placement')
@@ -567,23 +696,29 @@ async def create_supertab():
     tabletradetab1 = widgets.VBox([account_w, symbol_validity_check_w, sheet, out_live])
     tabletradetab2  = widgets.VBox([tradesheet])
     supertab.children = [tabletradetab1 , tabletradetab2]
-    return supertab
-            
+else:    
+    async def create_supertab():
+        supertab_contents = ['Order Placement','Trades']
+        supertab = widgets.Tab()
+        supertab.set_title(0, 'Order Placement')
+        supertab.set_title(1,'Trades')
+        tabletradetab1 = widgets.VBox([account_w, symbol_validity_check_w, sheet, out_live])
+        tabletradetab2  = widgets.VBox([tradesheet])
+        supertab.children = [tabletradetab1 , tabletradetab2]
+        return supertab
 
-
-
-async def main():
-    t1 = asyncio.get_event_loop().create_task(orderTable())
-    await asyncio.sleep(0)
-    supertab = asyncio.get_event_loop().run_until_complete(create_supertab())
-    await asyncio.sleep(0)
-    return supertab
-    #await t2
-    #await asyncio.get_event_loop().run_in_executor()
-    #supertab
-    #await t
-supertab = asyncio.run(main())
-#asyncio.get_event_loop().run_until_complete(main())
+    async def main():
+        t1 = asyncio.get_event_loop().create_task(orderTable())
+        await asyncio.sleep(0)
+        supertab = asyncio.get_event_loop().run_until_complete(create_supertab())
+        await asyncio.sleep(0)
+        return supertab
+        #await t2
+        #await asyncio.get_event_loop().run_in_executor()
+        #supertab
+        #await t
+    supertab = asyncio.run(main())
+    #asyncio.get_event_loop().run_until_complete(main())
 
 
 

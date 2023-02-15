@@ -800,7 +800,7 @@ def cancel_order(orderIDStr=None, ibprogram=None):
     reqorders = ib.orders()
     ib.sleep(2)
     for order in reqorders:
-        print(order.orderId, type(order.orderId))
+        #print(order.orderId, type(order.orderId))
         if order.orderId == orderID:
             print('cancelling order:',order.orderId)
             ib.cancelOrder(order)
@@ -1146,7 +1146,7 @@ def get_price_history(market, symbol, periodType, period, timeframe, frequency, 
         contract = Index(symbol, 'CBOE')
         whatToShow = 'TRADES'
     else:
-        contract = Stock(symbol, 'SMART', 'SGD')
+        contract = Stock(symbol, 'SMART', 'USD')
         whatToShow = 'TRADES'
     '''
     if tf=='H1':
@@ -1301,5 +1301,27 @@ def get_price_history(market, symbol, periodType, period, timeframe, frequency, 
     
     return df
 #print(df[['date', 'open', 'high', 'low', 'close']])
+
+
+
+
+def get_stock_history(ib=None, symbol='TSLA', btf = '5 mins'):
+    if ib is None:
+        return None
+    contract = Stock(symbol, 'SMART', 'USD')
+    print(contract)
+    whatToShow = 'TRADES'
+    ib.qualifyContracts(contract)
+    end_date = ''
+    duration = '1 D'
+    keepUpToDate=True
+    ib.reqMarketDataType(1)
+    useRTH = True
+    bars = ib.reqHistoricalData(contract, endDateTime=end_date, durationStr=duration, barSizeSetting=btf, whatToShow=whatToShow, useRTH=useRTH,formatDate=1,keepUpToDate=keepUpToDate)
+    ib.sleep(2)
+    print(bars)
+    return bars
+    
+
 
     

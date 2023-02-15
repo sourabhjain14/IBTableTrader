@@ -95,13 +95,13 @@ def create_inttext(param, param_name, param_value, tag=''):
 
 def create_floattext(param, param_name, param_value, tag=''):
     if tag=='':
-        tag = param_name
+        tag = ''
     param[param_name] = param_value
-    def floattext_f(change):
-        param[param_name] = change.new
+    #def floattext_f(change):
+    #    param[param_name] = change.new
     floattext_w=widgets.FloatText(value=param[param_name],description=tag,\
                                   disabled=False, layout={'width': bw}, style=style)
-    floattext_w.observe(floattext_f,'value')
+    #floattext_w.observe(floattext_f,'value')
     return floattext_w
 
 
@@ -112,8 +112,8 @@ def create_button(param, param_name, param_value, tag='',color='gray'):
     param[param_name] = param_value
     button = widgets.Button(description=tag,layout={'width': bw})
     button.style.button_color = color
-    def on_button_clicked(b):
-        print(param)
-    button.on_click(on_button_clicked)
+    #def on_button_clicked(b):
+    #    print(param)
+    #button.on_click(on_button_clicked)
     return button
 
