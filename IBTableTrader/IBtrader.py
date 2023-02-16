@@ -872,6 +872,48 @@ def liquidate_all(ibprogram=None):
         ib.disconnect() 
 
 
+        
+        
+def flatten_position(symbol=None, ibprogram=None):
+    util.startLoop()  # uncomment this line when in a notebook
+    already_connected = False
+    if ibprogram!=None:
+        already_connected = True
+    
+    if already_connected == False:
+        ib = IB()
+        try:
+            ib.connect(IP, PORT, clientId=CLIENT_ID)
+        except:
+            print('connection failed, please check whether IB TWS/Gateway is running in background')
+            return None
+    else:
+        ib = ibprogram
+    
+    reqpos = ib.reqPositions()
+    ib.sleep(2)
+    for p in reqpos:
+        sym=p.contract.symbol
+        if sym!=symbol: continue 
+        pos = int(p.position)
+        #print(symbol, pos)
+        direction = "BUY" if pos < 0 else "SELL"
+        contract = p.contract
+        ib.qualifyContracts(contract)
+        order=MarketOrder(direction, abs(pos))
+        ib.sleep(0.2)
+        trade = ib.placeOrder(contract, order)
+        print(trade)
+        ib.sleep(0.2)
+    
+    if already_connected == False:
+        ib.disconnect() 
+
+        
+        
+        
+        
+        
     
 def get_option_chain_data(ibprogram=None, symbol=None, secType=None, exchange=None):
     util.startLoop()  # uncomment this line when in a notebook

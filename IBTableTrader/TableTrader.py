@@ -37,7 +37,7 @@ from IBtrader import get_open_orders, get_open_trades, get_positions
 
 #get_stock_history(ib=None, symbol='TSLA', btf = '5 min'):
 from IBtrader import get_stock_history
-from IBtrader import liquidate_all, cancel_order
+from IBtrader import liquidate_all, cancel_order, flatten_position
 
 
 from widgetlib import create_button, create_dropdown, create_checkbox, create_floattext
@@ -80,17 +80,19 @@ account_w.value = dfa.to_string()
 
 
 symbol_nasdaq = pd.read_csv('./finvizNASDAQ.csv')
-symbol_nasdaq=symbol_nasdaq.dropna()
+symbol_nasdaq=symbol_nasdaq.dropna(subset=['Ticker'])
 symbol_nasdaq_list = (symbol_nasdaq['Ticker']).to_list()
 
 symbol_nyse = pd.read_csv('./finvizNYSE.csv')
-symbol_nyse=symbol_nyse.dropna()
+symbol_nyse=symbol_nyse.dropna(subset=['Ticker'])
 symbol_nyse_list = symbol_nyse['Ticker'].to_list()
 
 symbol_list_ = symbol_nasdaq_list + symbol_nyse_list
 
 symbol_list = list(set(symbol_list_))
+symbol_list.sort()
 
+#print(symbol_list)
 
 
 symbol_validity_check_w = create_checkbox(param, "check_symbol_validity", True, tag='check symbol validity')
@@ -410,13 +412,13 @@ def calculate_ticker(change, i=0):
     symbol = symbol_.upper()
     # return
         
-    out_live.append_stdout("symbol:"+symbol)
+    out_live.append_stdout("\n symbol:"+symbol)
     #symbol = change.new.value
     #out_live.append_stdout("symbol:"+symbol)
     #print(change['new']['value'])
     if symbol_validity_check_w.value==True:
         if symbol not in symbol_list:
-            out_live.append_stdout("  not a valid symbol \n")
+            out_live.append_stdout(" not a valid symbol \n")
             #out_live.append_stdout(str(symbol_list))
             return
     #print(change)
@@ -523,7 +525,6 @@ tradetable_w.loc[k,8].value = "Cancel"
     
 #cancel_order(orderIDStr=None, ibprogram=None): 
 cancelt = [None]*TRADETABLE_ROW
-flattent = [None]*TRADETABLE_ROW
 for i in range(1,TRADETABLE_ROW):
     cancelt[i] = create_button(param, "Cancel", 0, 'Cancel','red')
     #sellt[i] = create_button(param, "SELL", 0, 'SELL', 'red')
@@ -596,6 +597,89 @@ def fill_tradetable(opentrades):
 
 
         
+        
+        
+        
+        
+        
+        
+        
+'''
+position table
+'''
+        
+        
+positiontable_COLUMN = 4
+positiontable_ROW = MAX_ROW*3
+positionsheet = ipysheet.sheet(rows=positiontable_ROW, columns=positiontable_COLUMN)
+positiontable_w = pd.DataFrame(columns=['A','B','C','D'])#,'E','F','G','H','I','J'])
+
+for i in range(positiontable_ROW):
+    for j in range(positiontable_COLUMN):
+        if i==0: positiontable_w.loc[i,j] = ipysheet.cell(i, j, None,background_color='yellow',read_only=True)
+        else: positiontable_w.loc[i,j] = ipysheet.cell(i, j, None,read_only=True)
+        
+
+
+k=0
+positiontable_w.loc[k,0].value = "symbol"
+positiontable_w.loc[k,1].value = "position"
+positiontable_w.loc[k,2].value = "Comment"
+positiontable_w.loc[k,3].value = "Cancel"
+    
+
+flattent = [None]*positiontable_ROW
+for i in range(1,positiontable_ROW):
+    flattent[i] = create_button(param, "Flatten", 0, 'Flatten','red')
+    positiontable_w.loc[i,3] = ipysheet.cell(i, 3, flattent[i])
+#print("button created")         
+
+def flatten_button(b,i):
+    b.disabled=True
+    b.style.button_color = 'black'
+    symbol = positiontable_w.loc[i,0].value
+    flatten_position(symbol, ibprogram)
+    #b.style.button_color = 'red'
+    #b.disabled=False
+for r in range(1,positiontable_ROW):
+    positiontable_w.loc[r,3].value.on_click(functools.partial(flatten_button, i = r))
+
+
+        
+        
+def fill_positiontable(openpositions):
+    k=0
+    trade_dict = {}
+    trade_id = []
+    for p in openpositions:
+        symbol = p.contract.symbol
+        trade_id.append(symbol)
+        trade_dict[tid] = p
+    trade_id.sort()
+        
+    for i in range(1,positiontable_ROW):
+        for j in range(positiontable_COLUMN-1):
+            positiontable_w.loc[i,j].value = None
+    
+    for r in range(1,positiontable_ROW):
+        positiontable_w.loc[r,3].value.style.button_color = 'red'
+        positiontable_w.loc[r,3].value.disabled=False
+        
+    for key in trade_id:
+        trade = trade_dict[key]
+        k+=1
+        positiontable_w.loc[k,0].value = trade.contract.symbol
+        positiontable_w.loc[k,1].value = trade.order.position
+        positiontable_w.loc[k,2].value = ""
+
+        
+        
+        
+        
+        
+        
+        
+        
 if DEBUG_MODE==1:
     try:
         opentrades = ibprogram.openTrades()
@@ -603,6 +687,15 @@ if DEBUG_MODE==1:
         fill_tradetable(opentrades)
     except:
         pass
+    
+    #try:
+    openpositions = ibprogram.positions()
+    ibprogram.sleep(2)
+    print("positions:")
+    print(openpositions)
+    #fill_positiontable(openpositions)
+    #except:
+    #    pass
 
         
 async def orderTable():
@@ -615,12 +708,6 @@ async def orderTable():
         clocktime = 100*nowtz.hour+nowtz.minute
         new_minute=nowtz.minute
         if new_minute!=old_minute:
-            #new_now = nowtz
-            #print("EST Time:",nowtz)
-            #out_live.clear_output(True)
-            #out_live.append_stdout("Time:"+str(nowtz)+'\n')
-            #table_w.loc[1,4].value = nowtz.hour 
-            #table_w.loc[1,5].value = nowtz.minute 
             old_minute = new_minute
             #try:
             #with await ibprogram.connectAsync():
@@ -635,24 +722,6 @@ async def orderTable():
                 fill_tradetable(opentrades)
             except:
                 pass
-            #k=1
-            #for trade in opentrades:
-            #    k+=1
-            #    table_w.loc[k,0].value = trade.contract.symbol
-            #    table_w.loc[k,6].value = trade.order.totalQuantity
-            
-            #ibprogram.sleep(2)
-            #orders = asyncio.get_event_loop.run_until_complete(get_open_orders(ibprogram))
-            #await orders
-            #reqtrades = ib.openTrades()
-            #ibprogrm.sleep(2)
-            
-            #orders = asyncio.get_event_loop.run_until_complete(ibprogram.sleep(2))
-            #out_live.append_stdout("ORDERS:"+str(openorders)+'\n')
-            #out_live.append_stdout("TRADES:"+str(opentrades)+'\n')
-            #print("ORDERS: ",openorders)
-            #except:
-            #    print("orders fetch failed")
         else:
             await asyncio.sleep(1)
 #asyncio.get_event_loop().create_task(orderTable())
@@ -676,6 +745,29 @@ async def orderTable():
 '''
 
 
+
+
+async def positionTable():
+    orders=None
+    tz = pytz.timezone('US/Eastern')
+    old_minute=-1
+    while(True):
+        nowtz = datetime.datetime.now().astimezone(tz)
+        new_minute=nowtz.minute
+        if new_minute!=old_minute:
+            old_minute = new_minute
+            try:
+                openpositions = ibprogram.positions()
+                ib.sleep(2)
+                fill_positiontable(openpositions)
+            except:
+                pass
+        else:
+            await asyncio.sleep(1)
+
+
+
+
 #out_live_table.clear_output()
 #with out_live_table:
 #    display(sheet)
@@ -689,22 +781,26 @@ async def orderTable():
 #supertab=None
 
 if DEBUG_MODE==1:
-    supertab_contents = ['Order Placement','Trades']
+    supertab_contents = ['Order Placement','Trades','Positions']
     supertab = widgets.Tab()
     supertab.set_title(0, 'Order Placement')
     supertab.set_title(1,'Trades')
+    supertab.set_title(2,'Positions')
     tabletradetab1 = widgets.VBox([account_w, symbol_validity_check_w, sheet, out_live])
     tabletradetab2  = widgets.VBox([tradesheet])
-    supertab.children = [tabletradetab1 , tabletradetab2]
+    tabletradetab3  = widgets.VBox([positionsheet])
+    supertab.children = [tabletradetab1 , tabletradetab2, tabletradetab3]
 else:    
     async def create_supertab():
-        supertab_contents = ['Order Placement','Trades']
+        supertab_contents = ['Order Placement','Trades','Positions']
         supertab = widgets.Tab()
         supertab.set_title(0, 'Order Placement')
         supertab.set_title(1,'Trades')
+        supertab.set_title(2,'Positions')
         tabletradetab1 = widgets.VBox([account_w, symbol_validity_check_w, sheet, out_live])
         tabletradetab2  = widgets.VBox([tradesheet])
-        supertab.children = [tabletradetab1 , tabletradetab2]
+        tabletradetab3  = widgets.VBox([positionsheet])
+        supertab.children = [tabletradetab1 , tabletradetab2, tabletradetab3]
         return supertab
 
     async def main():
